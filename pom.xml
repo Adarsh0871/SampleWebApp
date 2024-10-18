@@ -11,4 +11,15 @@
     <dependencies>
         <!-- Add your dependencies here -->
     </dependencies>
+
+    <distributionManagement>
+        <repository>
+            <id>my-repo</id> <!-- Replace with your repository ID -->
+            <url>http://your-repo-url/repository/maven-releases/</url> <!-- Replace with your repository URL -->
+        </repository>
+        <snapshotRepository>
+            <id>my-snapshot-repo</id> <!-- Replace with your snapshot repository ID -->
+            <url>http://your-repo-url/repository/maven-snapshots/</url> <!-- Replace with your snapshot repository URL -->
+        </snapshotRepository>
+    </distributionManagement>
 </project>
