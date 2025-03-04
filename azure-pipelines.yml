@@ -1,14 +1,39 @@
 trigger:
-  - master  # Correct indentation for the trigger
+  - main  # Runs the pipeline when changes are pushed to 'main' branch
 
 pool:
-  name: ubuntu  # Ensure this matches the actual agent pool name
+  name: Default  # Make sure this matches the agent pool where "my-local-agent" is registered
+  demands:
+    - Agent.Name -equals my-local-agent2  # Ensures it runs on your agent
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+stages:
+- stage: Build
+  jobs:
+  - job: BuildJob
+    steps:
+    - script: |
+        echo "Building HTML site..."
+        mkdir -p $(Build.ArtifactStagingDirectory)/site
+        cp -r * $(Build.ArtifactStagingDirectory)/site
+      displayName: "Prepare HTML Artifacts"
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: '$(Build.ArtifactStagingDirectory)/site'
+        artifactName: 'html-site'
+
+- stage: Deploy
+  jobs:
+  - job: DeployToLocalServer
+    steps:
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        artifactName: 'html-site'
+        downloadPath: '$(Build.ArtifactStagingDirectory)'
+
+    - script: |
+        echo "Deploying files to /var/www/html"
+        sudo rm -rf /var/www/html*
+        sudo cp -r $(Build.ArtifactStagingDirectory)/html-site/* /var/www/html
+        sudo systemctl restart apache2
+      displayName: "Deploy and Restart Web Server"
