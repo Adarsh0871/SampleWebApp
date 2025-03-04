@@ -66,9 +66,9 @@ stages:
 
     - script: |  
         echo "Deploying files to /var/ with deployment ID: $(deploymentID)"  
-        sudo rm -rf /var/www/html*  
-        sudo cp -r $(Build.ArtifactStagingDirectory)/html-site/* /var/www/html  
-        sudo systemctl restart apache2  
+        # sudo rm -rf /var/www/html*  
+        # sudo cp -r $(Build.ArtifactStagingDirectory)/html-site/* /var/www/html  
+        # sudo systemctl restart apache2  
       displayName: "Deploy and Restart Web Server"  
 
 ### VERIFICATION STAGE ###
