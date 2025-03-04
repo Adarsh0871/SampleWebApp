@@ -1,39 +1,92 @@
-trigger:
-  - main  # Runs the pipeline when changes are pushed to 'main' branch
+trigger:  
+  - main  # Runs the pipeline when changes are pushed to 'main' branch  
 
-pool:
-  name: Default  # Make sure this matches the agent pool where "my-local-agent" is registered
-  demands:
-    - Agent.Name -equals my-local-agent2  # Ensures it runs on your agent
+pool:  
+  name: Default  # Ensure this matches the agent pool where "my-local-agent" is registered  
+  demands:  
+    - Agent.Name -equals my-local-agent  # Ensures it runs on your agent 
 
-stages:
-- stage: Build
-  jobs:
-  - job: BuildJob
-    steps:
-    - script: |
-        echo "Building HTML site..."
-        mkdir -p $(Build.ArtifactStagingDirectory)/site
-        cp -r * $(Build.ArtifactStagingDirectory)/site
-      displayName: "Prepare HTML Artifacts"
+variables:
+  deploymentID: $(Build.BuildId)  # Uses the pipeline's Build ID as the deployment ID
 
-    - task: PublishBuildArtifacts@1
-      inputs:
-        pathToPublish: '$(Build.ArtifactStagingDirectory)/site'
-        artifactName: 'html-site'
+stages:  
 
-- stage: Deploy
-  jobs:
-  - job: DeployToLocalServer
-    steps:
-    - task: DownloadBuildArtifacts@0
-      inputs:
-        artifactName: 'html-site'
-        downloadPath: '$(Build.ArtifactStagingDirectory)'
+### BUILD STAGE ###
+- stage: Build  
+  jobs:  
+  - job: BuildJob  
+    steps:  
+    - script: |  
+        echo "Preparing build "  
+        echo "Building HTML site..."  
+        mkdir -p $(Build.ArtifactStagingDirectory)/site  
+        cp -r * $(Build.ArtifactStagingDirectory)/site  
+      displayName: "Prepare HTML Artifacts"  
 
-    - script: |
-        echo "Deploying files to /var/www/html"
-        sudo rm -rf /var/www/html*
-        sudo cp -r $(Build.ArtifactStagingDirectory)/html-site/* /var/www/html
-        sudo systemctl restart apache2
-      displayName: "Deploy and Restart Web Server"
+    - task: PublishBuildArtifacts@1  
+      inputs:  
+        pathToPublish: '$(Build.ArtifactStagingDirectory)/site'  
+        artifactName: 'html-site'  
+      displayName: "Publish Build Artifact"  
+
+### TESTING STAGE ###
+- stage: Testing  
+  jobs:  
+  - job: RunTests  
+    steps:  
+    - script: |  
+        echo "Performing unit testing..."  
+        # Add unit testing commands here  
+      displayName: "Run Unit Tests"  
+
+### SECURITY STAGE ###
+- stage: Security  
+  jobs:  
+  - job: ApplySecurityPatches  
+    steps:  
+    - script: |  
+        echo "Applying security patches..."  
+        # Add security patching commands here  
+      displayName: "Apply Security Patches"  
+
+### DEPLOYMENT STAGE ###
+- stage: Deploy  
+  jobs:  
+  - job: DeployToLocalServer  
+    steps:  
+    - script: |  
+        echo "Fetching build artifact with deployment ID: $(deploymentID)"  
+      displayName: "Fetch Build Artifacts"  
+
+    - task: DownloadBuildArtifacts@0  
+      inputs:  
+        artifactName: 'html-site'  
+        downloadPath: '$(Build.ArtifactStagingDirectory)'  
+      displayName: "Pull Build Artifacts"  
+
+    - script: |  
+        echo "Deploying files to /var/ with deployment ID: $(deploymentID)"  
+        sudo rm -rf /var/www/html*  
+        sudo cp -r $(Build.ArtifactStagingDirectory)/html-site/* /var/www/html  
+        sudo systemctl restart apache2  
+      displayName: "Deploy and Restart Web Server"  
+
+### VERIFICATION STAGE ###
+- stage: Verification  
+  jobs:  
+  - job: VerifyDeployment  
+    steps:  
+    - script: |  
+        echo "Verifying deployment with deployment ID: $(deploymentID)"  
+        # Add verification steps here (e.g., checking if services are running)  
+      displayName: "Verify Deployment"  
+
+### NOTIFICATION STAGE ###
+- stage: Notification  
+  jobs:  
+  - job: SendNotification  
+    steps:  
+    - script: |  
+        echo "Sending deployment notification..."  
+        # Add notification commands here (e.g., Slack, Teams, Email)  
+      displayName: "Send Deployment Notification"  
