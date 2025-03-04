@@ -1,8 +1,8 @@
 trigger:
-- master
+  - master  # Correct indentation for the trigger
 
 pool:
-  name: ubuntu  # Use your custom agent pool name
+  name: ubuntu  # Ensure this matches the actual agent pool name
 
 steps:
 - script: echo Hello, world!
