@@ -2,7 +2,7 @@ trigger:
 - master
 
 pool:
-  vmImage: ubuntu-latest
+  name: ubuntu  # Use your custom agent pool name
 
 steps:
 - script: echo Hello, world!
